@@ -108,7 +108,7 @@ class TrainingData:
 
         print(f"Getting data from {self.start_date} to {self.end_date}")
         s2_data = gee.S2_Data_Extractor(
-            self.tiles, self.start_date, self.end_date, self.clear_threshold
+            self.tiles, self.start_date, self.end_date, self.clear_threshold, self.patch_size
         )
         self.data, self.tiles = s2_data.get_patches()
         self.data = np.array(

@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 import utils
 
-EE_PROJECT = os.environ.get('EE_PROJECT', 'earthindex')
+EE_PROJECT = os.environ.get('ee-raulpeinado10-gee')
 
 class S2_Data_Extractor:
     """
@@ -37,10 +37,8 @@ class S2_Data_Extractor:
         self.clear_threshold = clear_threshold
         self.batch_size = batch_size
 
-        ee.Initialize(
-            opt_url="https://earthengine-highvolume.googleapis.com",
-            project=ee_project,
-        )
+        ee.Authenticate()
+        ee.Initialize(project="ee-raulpeinado10-gee")
 
         s2 = ee.ImageCollection("COPERNICUS/S2_HARMONIZED")
 

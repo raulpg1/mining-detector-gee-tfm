@@ -1,0 +1,3 @@
+[submodule "minig-detector-tfm/references"]
+	path = minig-detector-tfm/references
+	url = git@github.com:earthrise-media/mining-detector.git

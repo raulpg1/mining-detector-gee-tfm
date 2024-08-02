@@ -5,3 +5,4 @@ keras
 geopandas
 tqdm
 matplotlib
+scikit-learn

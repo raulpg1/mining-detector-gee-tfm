@@ -10,6 +10,63 @@ from scipy.stats import mode
 import shapely
 from tensorflow import keras
 
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+
+# --------------------------------FUNCIONES AUXILIARES -----------------------------
+# - Callbacks
+def define_callbacks(model_name):
+    """
+        Define los callbacks para la etapa de trainning de los modelos.
+    """
+    reduce_lr = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.75,
+        patience=5,
+        verbose=1,
+        mode='min',
+        min_lr=0.000001)
+
+    early_stopping = EarlyStopping(
+        monitor='val_loss',
+        patience=10,
+        verbose=1,
+        mode='min')
+
+    model_checkpoint = ModelCheckpoint(
+        filepath=os.path.join(os.getcwd(),"weigths",model_name+"weights.h5"),
+        monitor='val_loss',
+        verbose=1,
+        save_best_only=True,
+        save_weights_only=True,
+        mode='auto')
+    # return [early_stopping, model_checkpoint]
+    return [reduce_lr, early_stopping, model_checkpoint]
+
+# - Graficar la evolución de la precisión y la pérdida del modelo
+def grafica_accuracy(modelo):
+    """
+        Grafica la evolución de la precisión y la pérdida del modelo.
+    """
+    plt.style.use("ggplot")
+    plt.figure()
+    total_epoch = len(modelo.epoch)
+    plt.plot(np.arange(0, total_epoch ),
+             modelo.history["loss"], label="train_loss")
+    plt.plot(np.arange(0, total_epoch ),
+             modelo.history["val_loss"], label="val_loss")
+    plt.plot(np.arange(0, total_epoch ),
+             modelo.history["acc"], label="train_acc")
+    plt.plot(np.arange(0, total_epoch ),
+             modelo.history["val_acc"], label="val_acc")
+    plt.title("Training Loss and Accuracy")
+    plt.xlabel("Epoch #")
+    plt.ylabel("Loss/Accuracy")
+    plt.legend()
+    plt.show()
+# --------------------------------------------------------------------------------------------
+
 SENTINEL_BANDS = ['coastal-aerosol',
                   'blue',
                   'green',
@@ -542,3 +599,6 @@ class DescartesRun(object):
         print(len(feature_list), 'features generated')
         if len(feature_list) > 0:
             self.patch_product.add(feature_list)
+
+
+

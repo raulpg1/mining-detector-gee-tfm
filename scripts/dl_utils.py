@@ -13,6 +13,7 @@ from tensorflow import keras
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
+from sklearn.metrics import classification_report
 
 # --------------------------------FUNCIONES AUXILIARES -----------------------------
 # - Callbacks
@@ -23,14 +24,14 @@ def define_callbacks(model_name):
     reduce_lr = ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.75,
-        patience=5,
+        patience=10,
         verbose=1,
         mode='min',
         min_lr=0.000001)
 
     early_stopping = EarlyStopping(
         monitor='val_loss',
-        patience=10,
+        patience=25,
         verbose=1,
         mode='min')
 
@@ -65,6 +66,29 @@ def grafica_accuracy(modelo):
     plt.ylabel("Loss/Accuracy")
     plt.legend()
     plt.show()
+
+def evaluate_model(test_model,val_images,val_labels,thres):    
+    test_preds = test_model.predict(val_images)
+    if thres:
+        thresh = []
+        score = []
+        for threshold in range(2, 100, 2):
+            threshold /= 100
+            thresh.append(threshold)
+            test_labels = [np.argmax(y) for y in val_labels]
+            test_out = [pred > threshold for pred in test_preds]
+            score.append(1 - (np.sum(np.array(test_labels) != np.array(test_out)[:,0]) / len(test_labels)))
+            #print(np.sum(np.array(test_labels) != np.array(test_preds)), "of", len(test_labels), "test set predictions incorrect")
+        plt.plot(thresh, score)
+        plt.ylabel('Success Rate')
+        plt.xlabel('Threshold')
+        plt.title(f"Optimal Threshold: {thresh[np.argmax(score)]:.2f}")
+        plt.show()
+        optimal_threshold = thresh[np.argmax(score)]
+    
+    test_preds = np.squeeze(test_preds)
+    print(classification_report(val_labels, test_preds > 0.5))
+
 # --------------------------------------------------------------------------------------------
 
 SENTINEL_BANDS = ['coastal-aerosol',

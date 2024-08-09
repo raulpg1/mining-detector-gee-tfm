@@ -1,2 +1,11 @@
 
 scripts/__pycache__/dl_utils.cpython-310.pyc
+scripts/__pycache__/__init__.cpython-310.pyc
+scripts/__pycache__/viz_tools.cpython-310.pyc
+*.pyc
+notebooks/.ipynb_checkpoints/train_and_evaluate_all_models-checkpoint.ipynb
+notebooks/.ipynb_checkpoints/train_and_evaluate_all_models_balanced_classes-checkpoint.ipynb
+notebooks/.ipynb_checkpoints/train_ensemble-checkpoint.ipynb
+notebooks/.ipynb_checkpoints/train_model_fine_tunning_mobilenet-checkpoint.ipynb
+notebooks/.ipynb_checkpoints/train_model_fine_tunning_vgg16-checkpoint.ipynb
+notebooks/.ipynb_checkpoints/train_model_from_scratch-checkpoint.ipynb

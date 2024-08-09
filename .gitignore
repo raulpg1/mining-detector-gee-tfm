@@ -9,3 +9,5 @@ notebooks/.ipynb_checkpoints/train_ensemble-checkpoint.ipynb
 notebooks/.ipynb_checkpoints/train_model_fine_tunning_mobilenet-checkpoint.ipynb
 notebooks/.ipynb_checkpoints/train_model_fine_tunning_vgg16-checkpoint.ipynb
 notebooks/.ipynb_checkpoints/train_model_from_scratch-checkpoint.ipynb
+scripts/.ipynb_checkpoints/dl_utils-checkpoint.py
+scripts/.ipynb_checkpoints/models-checkpoint.py

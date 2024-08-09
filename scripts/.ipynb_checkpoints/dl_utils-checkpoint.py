@@ -24,14 +24,14 @@ def define_callbacks(model_name):
     reduce_lr = ReduceLROnPlateau(
         monitor='val_loss',
         factor=0.75,
-        patience=10,
+        patience=9,
         verbose=1,
         mode='min',
         min_lr=0.000001)
 
     early_stopping = EarlyStopping(
         monitor='val_loss',
-        patience=25,
+        patience=18,
         verbose=1,
         mode='min')
 
@@ -46,7 +46,7 @@ def define_callbacks(model_name):
     return [reduce_lr, early_stopping, model_checkpoint]
 
 # - Graficar la evolución de la precisión y la pérdida del modelo
-def grafica_accuracy(modelo):
+def grafica_accuracy(modelo, model_name):
     """
         Grafica la evolución de la precisión y la pérdida del modelo.
     """
@@ -61,13 +61,44 @@ def grafica_accuracy(modelo):
              modelo.history["acc"], label="train_acc")
     plt.plot(np.arange(0, total_epoch ),
              modelo.history["val_acc"], label="val_acc")
-    plt.title("Training Loss and Accuracy")
-    plt.xlabel("Epoch #")
+    plt.title(f"Métricas {model_name}: Loss and Accuracy")
+    plt.xlabel("Epochs")
     plt.ylabel("Loss/Accuracy")
     plt.legend()
     plt.show()
 
-def evaluate_model(test_model,val_images,val_labels,thres):    
+def all_models_metrics(models, model_names):
+    """
+    Grafica la evolución de la precisión y la pérdida de cada modelo en un único gráfico con 4 subplots.
+    """
+    plt.style.use("ggplot")
+    plt.figure(figsize=(14, 14))  # Ajusta el tamaño para acomodar los subplots
+
+    for i in range(len(models)):
+        modelo = models[i]
+        total_epoch = len(modelo.epoch)
+        
+        # Crear un subplot por modelo
+        plt.subplot(2, 2, i + 1)  # Organiza los subplots en una cuadrícula 2x2
+        
+        plt.plot(np.arange(0, total_epoch),
+                 modelo.history["loss"], label="train_loss")
+        plt.plot(np.arange(0, total_epoch),
+                 modelo.history["val_loss"], label="val_loss")
+        plt.plot(np.arange(0, total_epoch),
+                 modelo.history["acc"], label="train_acc")
+        plt.plot(np.arange(0, total_epoch),
+                 modelo.history["val_acc"], label="val_acc")
+        
+        plt.title(f"{model_names[i]}: Loss and Accuracy")
+        plt.xlabel("Epochs")
+        plt.ylabel("Loss/Accuracy")
+        plt.legend()
+
+    plt.tight_layout()  # Ajusta el layout para que no haya solapamiento
+    plt.show()
+
+def evaluate_model(test_model,val_images,val_labels,thres,model_name):    
     test_preds = test_model.predict(val_images)
     if thres:
         thresh = []
@@ -85,9 +116,17 @@ def evaluate_model(test_model,val_images,val_labels,thres):
         plt.title(f"Optimal Threshold: {thresh[np.argmax(score)]:.2f}")
         plt.show()
         optimal_threshold = thresh[np.argmax(score)]
-    
+
+    print(f"Evaluación del modelo -> {model_name}")
     test_preds = np.squeeze(test_preds)
     print(classification_report(val_labels, test_preds > 0.5))
+
+def evaluate_all_models(models,model_names,val_images,val_labels):
+    for i in range(len(models)):
+        print(f"Métricas del modelo -> {model_names[i]}")
+        test_preds = np.squeeze(models[i].predict(val_images))
+        print(classification_report(val_labels, test_preds > 0.5))
+        print("\n")
 
 # --------------------------------------------------------------------------------------------
 

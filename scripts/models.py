@@ -119,7 +119,9 @@ def vgg_16_model(input_shape):
     
     # Congelamos todas las capas del modelo base (la capa de input no se congela)
     for layer in base_model.layers:
-        if 'block' not in layer.name or 'block5' in layer.name : #or 'block4' in layer.name:
+        if 'block' not in layer.name or 'block1' in layer.name or 'block2' in layer.name or 'block3' in layer.name or 'block4' in layer.name:
+        #'block5' in layer.name : 
+        #or 'block4' in layer.name:
             layer.trainable = True
         else:
             layer.trainable = False
@@ -171,7 +173,7 @@ def mobilenet_model(input_shape):
     
     # Congelamos todas las capas del modelo base (la capa de input no se congela)
     for layer in base_model.layers:
-        if ('conv_dw' not in layer.name and 'conv_pw' not in layer.name) :#or '_13' in layer.name:
+        if ('conv_dw' not in layer.name and 'conv_pw' not in layer.name) or '_1' in layer.name or '_2' in layer.name or '_3' in layer.name or '_4' in layer.name:
             layer.trainable = True
         else:
             layer.trainable = False

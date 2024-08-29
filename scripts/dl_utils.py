@@ -10,30 +10,41 @@ from scipy.stats import mode
 import shapely
 from tensorflow import keras
 
+import pandas as pd
+import io
+from contextlib import redirect_stdout
+import re
+
 import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from sklearn.metrics import classification_report
+from datetime import datetime
 
 # --------------------------------FUNCIONES AUXILIARES -----------------------------
 # - Callbacks
-def define_callbacks(model_name):
+def define_callbacks(model_name,hiperparams):
     """
         Define los callbacks para la etapa de trainning de los modelos.
     """
-    reduce_lr = ReduceLROnPlateau(
-        monitor='val_loss',
-        factor=0.75,
-        patience=9,
-        verbose=1,
-        mode='min',
-        min_lr=0.000001)
 
+    list_callbacks = []
+    if "reduce_lr" in hiperparams["define_callbacks"]:
+        reduce_lr = ReduceLROnPlateau(
+            monitor='val_loss',
+            factor=0.75,
+            patience=hiperparams["patience_reduce_lr"],
+            verbose=1,
+            mode='min',
+            min_lr=0.00001)
+        list_callbacks.append(reduce_lr)
+            
     early_stopping = EarlyStopping(
         monitor='val_loss',
-        patience=18,
+        patience=hiperparams["patience_early_stopping"],
         verbose=1,
         mode='min')
+    list_callbacks.append(early_stopping)
 
     model_checkpoint = ModelCheckpoint(
         filepath=os.path.join(os.getcwd(),"weigths",model_name+"weights.h5"),
@@ -42,8 +53,8 @@ def define_callbacks(model_name):
         save_best_only=True,
         save_weights_only=True,
         mode='auto')
-    # return [early_stopping, model_checkpoint]
-    return [reduce_lr, early_stopping, model_checkpoint]
+    list_callbacks.append(model_checkpoint)
+    return list_callbacks
 
 # - Graficar la evolución de la precisión y la pérdida del modelo
 def grafica_accuracy(modelo, model_name):
@@ -127,6 +138,63 @@ def evaluate_all_models(models,model_names,val_images,val_labels):
         test_preds = np.squeeze(models[i].predict(val_images))
         print(classification_report(val_labels, test_preds > 0.5))
         print("\n")
+
+def get_df_best_model(model,x_test,y_test,model_name,prev_df):
+    stream = io.StringIO()
+    with redirect_stdout(stream):
+        evaluate_model(model,x_test,y_test,False,model_name)
+    evaluacion = stream.getvalue()
+    data = []
+    for elem in evaluacion.split("\n")[2:]:
+        if elem != "":
+            data.append(re.findall(r"macro avg|weighted avg|[a-z\-0-9\.]+",elem))
+    data[0] = ["index"] + data[0]
+    data[3] = [data[3][0]] + ["" , ""] + data[3][1:]
+
+    fecha_hora_actual = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}_{fecha_hora_actual}.csv'
+
+    df = pd.DataFrame(data[1:], columns=data[0])
+    df.to_csv(nombre_archivo, index=False)
+    
+    if len(prev_df) == 0:
+        return df, True
+    else:
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df.to_csv(nombre_archivo, index=False)
+        
+        valores = [[float(x) for x in list(df.iloc[0])[1:-1]]]
+        valores.append([float(x) for x in list(df.iloc[1])[1:-1]])
+        valores.append(float(df.iloc[3][-2]))
+
+        valores_old = [[float(x) for x in list(prev_df.iloc[0])[1:-1]]]
+        valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
+        valores_old.append(float(prev_df.iloc[3][-2]))
+        
+        #Comparamos el macro avg
+        if valores[-1] > valores_old[-1]:
+            return df, True
+        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
+            if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
+                return df, True
+            else:
+                return prev_df, False
+        else:
+            return prev_df, False
+
+        # Func inicial de comparación de valores
+        # for i,elem in enumerate(valores):
+        #     if elem < valores_old[i]:
+        #         return prev_df, False
+        # return df , True
+            
+def limpia_directorios(path):
+    for elem in os.listdir("./weigths/"):
+        if ".h5" in elem:
+            os.remove("./weigths/"+elem)
+
+    for elem in os.listdir("./tabla_resultados/"):
+        os.remove("./tabla_resultados/"+elem)
 
 # --------------------------------------------------------------------------------------------
 

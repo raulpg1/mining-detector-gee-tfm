@@ -188,7 +188,7 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df):
         #         return prev_df, False
         # return df , True
             
-def limpia_directorios(path):
+def limpia_directorios():
     for elem in os.listdir("./weigths/"):
         if ".h5" in elem:
             os.remove("./weigths/"+elem)

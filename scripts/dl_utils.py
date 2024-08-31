@@ -19,7 +19,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from sklearn.metrics import classification_report
-from datetime import datetime
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -169,13 +168,13 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
         
         valores = [[float(x) for x in list(df.iloc[0])[1:-1]]]
         valores.append([float(x) for x in list(df.iloc[1])[1:-1]])
-        valores.append(float(df.iloc[3][-2]))
+        valores.append(float(df.iloc[4][-2]))
 
         valores_old = [[float(x) for x in list(prev_df.iloc[0])[1:-1]]]
         valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
-        valores_old.append(float(prev_df.iloc[3][-2]))
+        valores_old.append(float(prev_df.iloc[4][-2]))
         
-        #Comparamos el macro avg
+        #Comparamos el Weighted avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
             return df, True
         elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
@@ -199,10 +198,9 @@ def limpia_directorios(directorio):
             os.remove("./best_models/"+elem)
         
 def save_models(model,hiperparams,fecha_actual,model_name):
-    model.save_weights(f'./best_models/best_{model_name}_{fecha_hora_actual}.h5')
-    with open(f'./best_models/best_hiperparams_{model_name}_{fecha_hora_actual}.txt', 'w') as archivo:
+    model.save_weights(f'./best_models/best_{model_name}.h5')
+    with open(f'./best_models/best_hiperparams_{model_name}_{fecha_actual}.txt', 'w') as archivo:
         archivo.write(str(hiperparams))
-    
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------   CÓDIGO DEL PROYECTO ORIGINAL   --------------------------------------------------------------------------

@@ -1,7 +1,7 @@
-
 import datetime
 import json
 import os
+import shutil
 
 import descarteslabs as dl
 from dateutil.relativedelta import relativedelta
@@ -197,10 +197,16 @@ def limpia_directorios(directorio):
         for elem in os.listdir("./best_models/"):
             os.remove("./best_models/"+elem)
         
-def save_models(model,hiperparams,fecha_actual,model_name):
-    model.save_weights(f'./best_models/best_{model_name}.h5')
-    with open(f'./best_models/best_hiperparams_{model_name}_{fecha_actual}.txt', 'w') as archivo:
+def save_models(model,hiperparams,fecha_actual,model_name,path_prueba_actual):
+    path_prueba_actual
+    model.save_weights(path_prueba_actual+f'best_{model_name}.h5')
+    with open(path_prueba_actual+f'best_hiperparams_{model_name}_{fecha_actual}.txt', 'w') as archivo:
         archivo.write(str(hiperparams))
+
+def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
+    for elem in names_csv_best_params:
+        shutil.copy("../notebooks/tabla_resultados/"+names_csv_best_params,path_prueba_actual)
+    
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------   CÓDIGO DEL PROYECTO ORIGINAL   --------------------------------------------------------------------------

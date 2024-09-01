@@ -155,7 +155,7 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
     data[0] = ["index"] + data[0]
     data[3] = [data[3][0]] + ["" , ""] + data[3][1:]
 
-    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}_{fecha_hora_actual}.csv'
+    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}{fecha_hora_actual}.csv'
 
     df = pd.DataFrame(data[1:], columns=data[0])
     df.to_csv(nombre_archivo, index=False)
@@ -168,11 +168,11 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
         
         valores = [[float(x) for x in list(df.iloc[0])[1:-1]]]
         valores.append([float(x) for x in list(df.iloc[1])[1:-1]])
-        valores.append(float(df.iloc[4][-2]))
+        valores.append(float(df.iloc[3][-2]))
 
         valores_old = [[float(x) for x in list(prev_df.iloc[0])[1:-1]]]
         valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
-        valores_old.append(float(prev_df.iloc[4][-2]))
+        valores_old.append(float(prev_df.iloc[3][-2]))
         
         #Comparamos el Weighted avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
@@ -205,7 +205,7 @@ def save_models(model,hiperparams,fecha_actual,model_name,path_prueba_actual):
 
 def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
     for elem in names_csv_best_params:
-        shutil.copy("../notebooks/tabla_resultados/"+names_csv_best_params,path_prueba_actual)
+        shutil.copy("../notebooks/tabla_resultados/"+elem,path_prueba_actual)
     
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------

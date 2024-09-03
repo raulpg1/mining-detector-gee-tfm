@@ -1,6 +1,0 @@
-index,precision,recall,f1-score,support
-0.0,0.96,0.98,0.97,653
-1.0,0.95,0.93,0.94,340
-accuracy,,,0.96,993
-macro avg,0.96,0.95,0.96,993
-weighted avg,0.96,0.96,0.96,993

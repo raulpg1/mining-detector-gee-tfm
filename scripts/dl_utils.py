@@ -1,7 +1,7 @@
-
 import datetime
 import json
 import os
+import shutil
 
 import descarteslabs as dl
 from dateutil.relativedelta import relativedelta
@@ -10,6 +10,7 @@ from scipy.stats import mode
 import shapely
 from tensorflow import keras
 
+import pickle
 import pandas as pd
 import io
 from contextlib import redirect_stdout
@@ -19,9 +20,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from sklearn.metrics import classification_report
-from datetime import datetime
 
-# --------------------------------FUNCIONES AUXILIARES -----------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# ---------------------------------------------------------------   FUNCIONES AUXILIARES AÑADIDAS    --------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # - Callbacks
 def define_callbacks(model_name,hiperparams):
     """
@@ -139,7 +144,7 @@ def evaluate_all_models(models,model_names,val_images,val_labels):
         print(classification_report(val_labels, test_preds > 0.5))
         print("\n")
 
-def get_df_best_model(model,x_test,y_test,model_name,prev_df):
+def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
     stream = io.StringIO()
     with redirect_stdout(stream):
         evaluate_model(model,x_test,y_test,False,model_name)
@@ -151,8 +156,7 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df):
     data[0] = ["index"] + data[0]
     data[3] = [data[3][0]] + ["" , ""] + data[3][1:]
 
-    fecha_hora_actual = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}_{fecha_hora_actual}.csv'
+    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}{fecha_hora_actual}.csv'
 
     df = pd.DataFrame(data[1:], columns=data[0])
     df.to_csv(nombre_archivo, index=False)
@@ -171,7 +175,7 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df):
         valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
         valores_old.append(float(prev_df.iloc[3][-2]))
         
-        #Comparamos el macro avg
+        #Comparamos el Weighted avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
             return df, True
         elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
@@ -181,22 +185,36 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df):
                 return prev_df, False
         else:
             return prev_df, False
-
-        # Func inicial de comparación de valores
-        # for i,elem in enumerate(valores):
-        #     if elem < valores_old[i]:
-        #         return prev_df, False
-        # return df , True
             
-def limpia_directorios(path):
-    for elem in os.listdir("./weigths/"):
-        if ".h5" in elem:
-            os.remove("./weigths/"+elem)
+def limpia_directorios(directorio):
+    if directorio == "weigths":
+        for elem in os.listdir("./weigths/"):
+            if ".h5" in elem:
+                os.remove("./weigths/"+elem)
+    elif directorio == "tabla_resultados":
+        for elem in os.listdir("./tabla_resultados/"):
+            os.remove("./tabla_resultados/"+elem)
+    elif directorio == "best_models":
+        for elem in os.listdir("./best_models/"):
+            os.remove("./best_models/"+elem)
+        
+def save_models(model,results,hiperparams,fecha_actual,model_name,path_prueba_actual):
+    model.save_weights(path_prueba_actual+f'best_{model_name}.h5')
+    with open(path_prueba_actual+f'best_hiperparams_{model_name}_{fecha_actual}.txt', 'w') as archivo:
+        archivo.write(str(hiperparams))
+    with open(path_prueba_actual+f'best_results_{model_name}_{fecha_actual}.pkl', 'wb') as file:
+        pickle.dump(results, file)
+    
 
-    for elem in os.listdir("./tabla_resultados/"):
-        os.remove("./tabla_resultados/"+elem)
-
-# --------------------------------------------------------------------------------------------
+def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
+    for elem in names_csv_best_params:
+        shutil.copy("../notebooks/tabla_resultados/"+elem,path_prueba_actual)
+    
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------   CÓDIGO DEL PROYECTO ORIGINAL   --------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 SENTINEL_BANDS = ['coastal-aerosol',
                   'blue',

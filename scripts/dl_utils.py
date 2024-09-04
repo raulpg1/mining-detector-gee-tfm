@@ -156,7 +156,7 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
     data[0] = ["index"] + data[0]
     data[3] = [data[3][0]] + ["" , ""] + data[3][1:]
 
-    nombre_archivo = f'./tabla_resultados/resultados_evaluacion_{model_name}{fecha_hora_actual}.csv'
+    nombre_archivo = f'./aux_path/resultados_evaluacion_{model_name}{fecha_hora_actual}.csv'
 
     df = pd.DataFrame(data[1:], columns=data[0])
     df.to_csv(nombre_archivo, index=False)
@@ -175,13 +175,26 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
         valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
         valores_old.append(float(prev_df.iloc[3][-2]))
         
-        #Comparamos el Weighted avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
+        #Comparamos el Macro avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
             return df, True
         elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
-            if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
+            sum_0 = sum(valores[0])
+            sum_1 = sum(valores[1])
+            sum_old_0 = sum(valores_old[0])
+            sum_old_1 = sum(valores_old[1])
+            if   (sum_0 > sum_old_0 and sum_1 > sum_old_1) or (sum_0 >= sum_old_0 and sum_1 > sum_old_1) or (sum_0 > sum_old_0 and sum_1 >= sum_old_1) : # si el actual es mejor nos quedamos con el actual
                 return df, True
-            else:
+            elif (sum_old_0 > sum_0 and sum_old_1 > sum_1) or (sum_old_0 >= sum_0 and sum_old_1 > sum_1) or (sum_old_0 > sum_0 and sum_old_1 >= sum_1): # si el anterior es mejor nos quedamos con el anterior
+                return prev_df, False
+            elif sum_0 == sum_old_0 and sum_1 == sum_old_1: # si son iguales nos quedamos con el que tenga menor diferencia entre las clases
+                if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
+                    return df, True
+                else:
+                    return prev_df, False
+            elif sum_0 + sum_1 > sum_old_0 + sum_old_1:
+                return df, True
+            else:   
                 return prev_df, False
         else:
             return prev_df, False
@@ -191,9 +204,9 @@ def limpia_directorios(directorio):
         for elem in os.listdir("./weigths/"):
             if ".h5" in elem:
                 os.remove("./weigths/"+elem)
-    elif directorio == "tabla_resultados":
-        for elem in os.listdir("./tabla_resultados/"):
-            os.remove("./tabla_resultados/"+elem)
+    elif directorio == "aux_path":
+        for elem in os.listdir("./aux_path/"):
+            os.remove("./aux_path/"+elem)
     elif directorio == "best_models":
         for elem in os.listdir("./best_models/"):
             os.remove("./best_models/"+elem)
@@ -208,7 +221,7 @@ def save_models(model,results,hiperparams,fecha_actual,model_name,path_prueba_ac
 
 def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
     for elem in names_csv_best_params:
-        shutil.copy("../notebooks/tabla_resultados/"+elem,path_prueba_actual)
+        shutil.copy("../notebooks/aux_path/"+elem,path_prueba_actual)
     
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------

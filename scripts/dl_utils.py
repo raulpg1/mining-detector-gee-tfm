@@ -21,6 +21,8 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLROnPlateau
 from sklearn.metrics import classification_report
 
+import ast
+
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------   FUNCIONES AUXILIARES AÑADIDAS    --------------------------------------------------------------
@@ -222,7 +224,59 @@ def save_models(model,results,hiperparams,fecha_actual,model_name,path_prueba_ac
 def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
     for elem in names_csv_best_params:
         shutil.copy("../notebooks/aux_path/"+elem,path_prueba_actual)
-    
+
+def load_hiperparams_and_results(directorio,model):
+    file = [elem for elem in os.listdir(directorio) if model in elem and ".txt" in elem][0]
+    with open(f"{directorio}/{file}", 'r') as archivo:
+        contenido = archivo.read()
+        hiperparams = ast.literal_eval(contenido)
+    file = [elem for elem in os.listdir(directorio) if model in elem and ".pkl" in elem][0]
+    with open(f"{directorio}/{file}", 'rb') as archivo:
+        modelo = pickle.load(archivo)  
+    return hiperparams[0],modelo
+
+def compare_best_results(df,prev_df,path,prev_path):
+    if len(prev_df) != 0:        
+        valores = [[float(x) for x in list(df.iloc[0])[1:-1]]]
+        valores.append([float(x) for x in list(df.iloc[1])[1:-1]])
+        valores.append(float(df.iloc[3,-2]))
+
+        valores_old = [[float(x) for x in list(prev_df.iloc[0])[1:-1]]]
+        valores_old.append([float(x) for x in list(prev_df.iloc[1])[1:-1]])
+        valores_old.append(float(prev_df.iloc[3,-2]))
+
+        #Comparamos el Macro avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
+        if valores[-1] > valores_old[-1]:
+            return df, path
+        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
+            sum_0 = sum(valores[0])
+            sum_1 = sum(valores[1])
+            sum_old_0 = sum(valores_old[0])
+            sum_old_1 = sum(valores_old[1])
+            if   (sum_0 > sum_old_0 and sum_1 > sum_old_1) or (sum_0 >= sum_old_0 and sum_1 > sum_old_1) or (sum_0 > sum_old_0 and sum_1 >= sum_old_1) : # si el actual es mejor nos quedamos con el actual
+                return df, path
+            elif (sum_old_0 > sum_0 and sum_old_1 > sum_1) or (sum_old_0 >= sum_0 and sum_old_1 > sum_1) or (sum_old_0 > sum_0 and sum_old_1 >= sum_1): # si el anterior es mejor nos quedamos con el anterior
+                return prev_df, prev_path
+            elif sum_0 == sum_old_0 and sum_1 == sum_old_1: # si son iguales nos quedamos con el que tenga menor diferencia entre las clases
+                if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
+                    return df, path
+                else:
+                    return prev_df, prev_path
+            elif sum_0 + sum_1 > sum_old_0 + sum_old_1:
+                return df, path
+            else:   
+                return prev_df, prev_path
+        else:
+            return prev_df, prev_path
+    return df, path
+
+def get_total_params(model):
+    stream = io.StringIO()
+    with redirect_stdout(stream):
+        model.summary()
+    summary_str = stream.getvalue()
+    print(re.search(r"Total params.*\n.*\n.*",summary_str).group(0))
+
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------   CÓDIGO DEL PROYECTO ORIGINAL   --------------------------------------------------------------------------

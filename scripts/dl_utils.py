@@ -233,7 +233,7 @@ def load_hiperparams_and_results(directorio,model):
     file = [elem for elem in os.listdir(directorio) if model in elem and ".pkl" in elem][0]
     with open(f"{directorio}/{file}", 'rb') as archivo:
         modelo = pickle.load(archivo)  
-    return hiperparams[0],modelo
+    return hiperparams,modelo
 
 def compare_best_results(df,prev_df,path,prev_path):
     if len(prev_df) != 0:        
@@ -276,6 +276,9 @@ def get_total_params(model):
         model.summary()
     summary_str = stream.getvalue()
     print(re.search(r"Total params.*\n.*\n.*",summary_str).group(0))
+
+def get_best_model_path(path,model,file):
+    return f"{path}/{[p for p in os.listdir(path) if file in p and model in p][0]}"
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------

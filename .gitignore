@@ -12,3 +12,7 @@ notebooks/.ipynb_checkpoints/train_model_from_scratch-checkpoint.ipynb
 scripts/.ipynb_checkpoints/dl_utils-checkpoint.py
 scripts/.ipynb_checkpoints/models-checkpoint.py
 /notebooks/.ipynb_checkpoints
+gee/.ipynb_checkpoints/get_training_data-checkpoint.ipynb
+gee/.ipynb_checkpoints/gee_pipeline-checkpoint.ipynb
+gee/.ipynb_checkpoints/gee_pipeline-checkpoint.py
+notebooks/models/.ipynb_checkpoints/ensemble-checkpoint.ipynb

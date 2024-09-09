@@ -117,7 +117,7 @@ def all_models_metrics(models, model_names):
     plt.show()
 
 def evaluate_model(test_model,val_images,val_labels,thres,model_name):    
-    test_preds = test_model.predict(val_images)
+    test_preds = test_model.predict(val_images,verbose=0)
     if thres:
         thresh = []
         score = []
@@ -275,7 +275,7 @@ def get_total_params(model):
     with redirect_stdout(stream):
         model.summary()
     summary_str = stream.getvalue()
-    print(re.search(r"Total params.*\n.*\n.*",summary_str).group(0))
+    print(re.search(r"(Total params.*\n.*\n.+\))",summary_str).group(0))
 
 def get_best_model_path(path,model,file):
     return f"{path}/{[p for p in os.listdir(path) if file in p and model in p][0]}"

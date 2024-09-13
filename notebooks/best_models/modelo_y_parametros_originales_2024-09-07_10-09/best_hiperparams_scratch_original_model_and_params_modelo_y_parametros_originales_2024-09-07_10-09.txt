@@ -1,1 +1,0 @@
-[{'class_weight': {0: 1, 1: 1}, 'batch_size': 32, 'epochs': 160, 'test_size': 0.3, 'semilla': 78}, 1, 'resultados_evaluacion_scratch_original_model_and_params_modelo_y_parametros_originales_2024-09-07_10-16.csv', 420.12290835380554]

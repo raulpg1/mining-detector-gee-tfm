@@ -1,1 +1,0 @@
-[{'class_weight': {0: 1.3468634686346863, 1: 1.6531365313653137}, 'batch_size': 16, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping', 'model_checkpoint'], 'patience_early_stopping': 14, 'patience_reduce_lr': 8, 'test_size': 0.3, 'semilla': 1874}, 1, 'resultados_evaluacion_scratch_original_model_split_30_modified_2024-09-08_09-20.csv', 609.3504776954651]

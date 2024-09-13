@@ -33,3 +33,5 @@ notebooks/best_models/split_20_2024-09-07_10-44/best_results_vgg16_split_20_2024
 notebooks/best_models/split_20_2024-09-07_10-44/best_results_scratch_original_model_split_20_2024-09-07_10-44.pkl
 notebooks/best_models/split_20_2024-09-07_10-44/best_results_scratch_modified_model_split_20_2024-09-07_10-44.pkl
 notebooks/best_models/split_20_2024-09-07_10-44/best_results_mobile_net_split_20_2024-09-07_10-44.pkl
+data/sampling_locations/.ipynb_checkpoints/get_distinct_points-checkpoint.ipynb
+gee/.ipynb_checkpoints/get_training_data-checkpoint.py

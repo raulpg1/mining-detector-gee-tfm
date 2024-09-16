@@ -13,6 +13,7 @@ from keras.models import Model
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 
+import tensorflow as tf
 
 from keras.layers import Input, Concatenate, Dense, Flatten, Dropout, Conv2D, BatchNormalization, GlobalMaxPooling2D
 
@@ -194,3 +195,32 @@ def mobilenet_model(input_shape):
         metrics=[keras.metrics.BinaryAccuracy(name="acc")],
     )
     return model
+
+def alexnet_model(input_shape):
+    
+    model = keras.Sequential(
+        [
+            layers.Conv2D(96, (5, 5), strides=1, activation='relu', input_shape=input_shape),
+            layers.MaxPooling2D(pool_size=(2, 2), strides=2),
+            layers.Conv2D(256, (3, 3), padding='same', activation='relu'),
+            layers.MaxPooling2D(pool_size=(2, 2), strides=2),
+            layers.Conv2D(384, (3, 3), padding='same', activation='relu'),
+            layers.Conv2D(384, (3, 3), padding='same', activation='relu'),
+            layers.Conv2D(256, (3, 3), padding='same', activation='relu'),
+            layers.MaxPooling2D(pool_size=(2, 2), strides=2),
+            layers.Flatten(),
+            layers.Dense(4096, activation='relu'),
+            layers.Dropout(0.5),
+            layers.Dense(4096, activation='relu'),
+            layers.Dropout(0.5),
+            layers.Dense(1, activation='sigmoid')
+        ]
+    )
+
+    model.compile(
+        optimizer=keras.optimizers.Adam(3e-4),
+        loss=keras.losses.BinaryCrossentropy(from_logits=False),
+        metrics=[keras.metrics.BinaryAccuracy(name="acc")],
+    )
+
+    return model 

@@ -22,6 +22,7 @@ from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, ReduceLRO
 from sklearn.metrics import classification_report
 
 import ast
+from scripts import viz_tools
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -64,21 +65,21 @@ def define_callbacks(model_name,hiperparams):
     return list_callbacks
 
 # - Graficar la evolución de la precisión y la pérdida del modelo
-def grafica_accuracy(modelo, model_name):
+def grafica_accuracy(modelo, model_name,epocas):
     """
         Grafica la evolución de la precisión y la pérdida del modelo.
     """
     plt.style.use("ggplot")
     plt.figure()
-    total_epoch = len(modelo.epoch)
+    total_epoch = epocas
     plt.plot(np.arange(0, total_epoch ),
-             modelo.history["loss"], label="train_loss")
+             modelo["loss"], label="train_loss")
     plt.plot(np.arange(0, total_epoch ),
-             modelo.history["val_loss"], label="val_loss")
+             modelo["val_loss"], label="val_loss")
     plt.plot(np.arange(0, total_epoch ),
-             modelo.history["acc"], label="train_acc")
+             modelo["acc"], label="train_acc")
     plt.plot(np.arange(0, total_epoch ),
-             modelo.history["val_acc"], label="val_acc")
+             modelo["val_acc"], label="val_acc")
     plt.title(f"Métricas {model_name}: Loss and Accuracy")
     plt.xlabel("Epochs")
     plt.ylabel("Loss/Accuracy")
@@ -135,7 +136,7 @@ def evaluate_model(test_model,val_images,val_labels,thres,model_name):
         plt.show()
         optimal_threshold = thresh[np.argmax(score)]
 
-    print(f"Evaluación del modelo -> {model_name}")
+    # print(f"Evaluación del modelo -> {model_name}")
     test_preds = np.squeeze(test_preds)
     print(classification_report(val_labels, test_preds > 0.5))
 
@@ -155,20 +156,17 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
     for elem in evaluacion.split("\n")[2:]:
         if elem != "":
             data.append(re.findall(r"macro avg|weighted avg|[a-z\-0-9\.]+",elem))
-    data[0] = ["index"] + data[0]
-    data[3] = [data[3][0]] + ["" , ""] + data[3][1:]
+    columnas = ["clase","precision","recall","f1-score","support"]
+    data[2] = [data[2][0]] + ["" , ""] + data[2][1:]    
 
     nombre_archivo = f'./aux_path/resultados_evaluacion_{model_name}{fecha_hora_actual}.csv'
 
-    df = pd.DataFrame(data[1:], columns=data[0])
+    df = pd.DataFrame(data, columns=columnas)
     df.to_csv(nombre_archivo, index=False)
     
     if len(prev_df) == 0:
         return df, True
-    else:
-        df = pd.DataFrame(data[1:], columns=data[0])
-        df.to_csv(nombre_archivo, index=False)
-        
+    else:      
         valores = [[float(x) for x in list(df.iloc[0])[1:-1]]]
         valores.append([float(x) for x in list(df.iloc[1])[1:-1]])
         valores.append(float(df.iloc[3][-2]))
@@ -279,6 +277,20 @@ def get_total_params(model):
 
 def get_best_model_path(path,model,file):
     return f"{path}/{[p for p in os.listdir(path) if file in p and model in p][0]}"
+
+def visualize_inference(model,x,x_norm,y,correct_class):
+    test_pred = model.predict(x_norm,verbose=0)    
+    if correct_class:
+        clasificadas = clasificadas_ok = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) == y))[0][:16]
+    else:
+        clasificadas = clasificadas_ko = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) != y))[0][:16]
+    pred_ko = np.where(np.squeeze(test_pred) >= 0.5, 1,0)[clasificadas]
+    y_clasificadas_ko = y[clasificadas].astype(int)
+    viz_tools.plot_image_grid(x[clasificadas], labels=["* Real class: "+str(int(real))+"\n* Pred class: "+str(int(pred)) for real,pred in zip(y_clasificadas_ko,pred_ko)],norm=True)
+    
+    
+
+
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------

@@ -281,12 +281,16 @@ def get_best_model_path(path,model,file):
 def visualize_inference(model,x,x_norm,y,correct_class):
     test_pred = model.predict(x_norm,verbose=0)    
     if correct_class:
-        clasificadas = clasificadas_ok = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) == y))[0][:16]
+        clasificadas_ok = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) == y))[0]
+        clasificadas = clasificadas_ok[:25]
     else:
-        clasificadas = clasificadas_ko = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) != y))[0][:16]
+        clasificadas_ko = np.where((np.where(np.squeeze(test_pred) >= 0.5, 1,0) != y))[0]
+        y_clasificadas_ko = y[clasificadas_ko].astype(int)
+        print(f"Se han clasificado un total de {sum(y_clasificadas_ko==0)} como falsos positivos.\nSe han clasificado un total de {sum(y_clasificadas_ko==1)} como falsos negativos.")
+        clasificadas = clasificadas_ko[:25]
     pred_ko = np.where(np.squeeze(test_pred) >= 0.5, 1,0)[clasificadas]
-    y_clasificadas_ko = y[clasificadas].astype(int)
-    viz_tools.plot_image_grid(x[clasificadas], labels=["* Real class: "+str(int(real))+"\n* Pred class: "+str(int(pred)) for real,pred in zip(y_clasificadas_ko,pred_ko)],norm=True)
+    y_clasificadas = y[clasificadas].astype(int)
+    viz_tools.plot_image_grid(x[clasificadas], labels=["* Real class: "+str(int(real))+"\n* Pred class: "+str(int(pred)) for real,pred in zip(y_clasificadas,pred_ko)],norm=True)
     
     
 

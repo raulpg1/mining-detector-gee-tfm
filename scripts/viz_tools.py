@@ -24,7 +24,7 @@ def normalize(x):
 
 def plot_image_grid(patches, labels=False, file_path=None, norm=True):
     num_img = int(np.ceil(np.sqrt(len(patches))))
-    plt.figure(figsize=(num_img, num_img), dpi=100)
+    plt.figure(figsize=(num_img*2.5, num_img*2.5), dpi=100)
     for index, img in enumerate(tqdm(patches)):
         plt.subplot(num_img, num_img, index + 1)
         if np.ma.is_masked(img):

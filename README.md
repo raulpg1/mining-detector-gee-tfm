@@ -19,7 +19,7 @@ Pasos para la instalación de Tensorflow GPU en Windows 11 a través de WSL2
     3.3.2 conda config --set auto_activate_base False 
   3.4 Creamos entornos
     3.4.1 conda create -n tfm_tf python=3.11
-    3.4.2 conda activate tf_tf
+    3.4.2 conda activate tfm_tf
 
 4. Instalación de CUDA
  4.1  Instalar la versión de CUDA toolkit 12.2

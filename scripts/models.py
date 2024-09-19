@@ -57,7 +57,7 @@ def scratch_original_model(input_shape):
             layers.Dense(1, activation="sigmoid"),
         ]
     )
-    
+
     model.compile(
         optimizer=keras.optimizers.Adam(3e-4),
         loss=keras.losses.BinaryCrossentropy(from_logits=False),
@@ -71,32 +71,28 @@ def scratch_modified_model(input_shape):
             keras.Input(shape=input_shape),
             layers.Conv2D(32, kernel_size=(3), padding="same", activation="relu"),
             layers.Conv2D(32, kernel_size=(3), padding="same", activation="relu"),
-            # layers.Conv2D(32, kernel_size=(3), padding="same", activation="relu"),
             layers.MaxPooling2D(pool_size=(2)),
             layers.Dropout(0.3),
     
             layers.Conv2D(64, kernel_size=(3), padding="same", activation="relu"),
             layers.Conv2D(64, kernel_size=(3), padding="same", activation="relu"),
-            # layers.Conv2D(64, kernel_size=(3), padding="same", activation="relu"),
             layers.MaxPooling2D(pool_size=(2)),
             layers.Dropout(0.3),
     
             layers.Conv2D(128, kernel_size=(3), padding="same", activation="relu"),
             layers.Conv2D(128, kernel_size=(3), padding="same", activation="relu"),
-            # layers.Conv2D(128, kernel_size=(3), padding="same", activation="relu"),
             layers.MaxPooling2D(pool_size=(2)),
             layers.Dropout(0.3),
     
             layers.Conv2D(256, kernel_size=(3), padding="same", activation="relu"),
             layers.Conv2D(512, kernel_size=(3), padding="same", activation="relu"),
-            # layers.Conv2D(128, kernel_size=(3), padding="same", activation="relu"),
             layers.MaxPooling2D(pool_size=(3)),
             layers.Dropout(0.3),
-    
-    
-            # layers.Flatten(),
-            GlobalMaxPooling2D(),
+            
+            layers.GlobalMaxPooling2D(),
             layers.Dense(256, activation="relu"),
+            layers.Dropout(0.4),
+            layers.Dense(128, activation="relu"),
             layers.Dropout(0.3),
             layers.Dense(1, activation="sigmoid"),
         ]
@@ -121,8 +117,6 @@ def vgg_16_model(input_shape):
     # Congelamos todas las capas del modelo base (la capa de input no se congela)
     for layer in base_model.layers:
         if 'block' not in layer.name or 'block1' in layer.name or 'block2' in layer.name or 'block3' in layer.name or 'block4' in layer.name:
-        #'block5' in layer.name : 
-        #or 'block4' in layer.name:
             layer.trainable = True
         else:
             layer.trainable = False
@@ -155,10 +149,8 @@ def vgg_16_model(input_shape):
     return model
 
 def mobilenet_model(input_shape):
-    # Importamos el modelo VGG16 preentrenado en ImageNet sin el top model
     base_model = MobileNet(weights='imagenet',include_top=False)
     
-    # Modificamos el input ya que VGG emplea imágenes RGB
     input_tensor = Input(shape=input_shape)
     x = Conv2D(32, (3, 3), activation='relu', padding='same')(input_tensor)
     
@@ -209,9 +201,9 @@ def alexnet_model(input_shape):
             layers.Conv2D(256, (3, 3), padding='same', activation='relu'),
             layers.MaxPooling2D(pool_size=(2, 2), strides=2),
             layers.Flatten(),
-            layers.Dense(4096, activation='relu'),
+            layers.Dense(1024, activation='relu'),
             layers.Dropout(0.5),
-            layers.Dense(4096, activation='relu'),
+            layers.Dense(512, activation='relu'),
             layers.Dropout(0.5),
             layers.Dense(1, activation='sigmoid')
         ]

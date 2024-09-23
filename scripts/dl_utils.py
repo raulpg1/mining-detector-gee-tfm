@@ -117,7 +117,7 @@ def all_models_metrics(models, model_names):
     plt.tight_layout()  # Ajusta el layout para que no haya solapamiento
     plt.show()
 
-def evaluate_model(test_model,val_images,val_labels,thres,model_name):    
+def evaluate_model(test_model,val_images,val_labels,thres,model_name,visualizar=True):    
     test_preds = test_model.predict(val_images,verbose=0)
     if thres:
         thresh = []
@@ -136,9 +136,12 @@ def evaluate_model(test_model,val_images,val_labels,thres,model_name):
         plt.show()
         optimal_threshold = thresh[np.argmax(score)]
 
+   
+        
     # print(f"Evaluación del modelo -> {model_name}")
     test_preds = np.squeeze(test_preds)
-    print(classification_report(val_labels, test_preds > 0.5))
+    if visualizar:
+        print(classification_report(val_labels, test_preds > 0.5))
 
 def evaluate_all_models(models,model_names,val_images,val_labels):
     for i in range(len(models)):

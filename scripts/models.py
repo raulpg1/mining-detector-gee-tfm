@@ -114,7 +114,7 @@ def vgg_16_model(input_shape):
     input_tensor = Input(shape=input_shape)
     x = Conv2D(64, (3, 3), activation='relu', padding='same')(input_tensor)
     
-    # Congelamos todas las capas del modelo base (la capa de input no se congela)
+    # Congelamos todas las capas del modelo base exceptuando los primeros bloques convolucionales
     for layer in base_model.layers:
         if 'block' not in layer.name or 'block1' in layer.name or 'block2' in layer.name or 'block3' in layer.name or 'block4' in layer.name:
             layer.trainable = True

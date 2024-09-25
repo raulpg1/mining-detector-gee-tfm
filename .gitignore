@@ -37,3 +37,4 @@ data/sampling_locations/.ipynb_checkpoints/get_distinct_points-checkpoint.ipynb
 gee/.ipynb_checkpoints/get_training_data-checkpoint.py
 notebooks/models/.ipynb_checkpoints/train_ensemble-checkpoint.ipynb
 scripts/.ipynb_checkpoints/viz_tools-checkpoint.py
+.ipynb_checkpoints/README-checkpoint.md

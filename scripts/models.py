@@ -15,14 +15,13 @@ from tensorflow.keras import layers
 
 import tensorflow as tf
 
-from keras.layers import Input, Concatenate, Dense, Flatten, Dropout, Conv2D, BatchNormalization, GlobalMaxPooling2D
+from keras.layers import Input, Dense, Flatten, Dropout, Conv2D, GlobalMaxPooling2D
 
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.applications import MobileNet
 
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
-from tqdm.notebook import tqdm
 
 parent_dir = os.path.split(os.getcwd())[0]
 if parent_dir not in sys.path:
@@ -115,20 +114,22 @@ def vgg_16_model(input_shape):
     x = Conv2D(64, (3, 3), activation='relu', padding='same')(input_tensor)
     
     # Congelamos todas las capas del modelo base exceptuando los primeros bloques convolucionales
+    entrenable = True
     for layer in base_model.layers:
-        if 'block' not in layer.name or 'block1' in layer.name or 'block2' in layer.name or 'block3' in layer.name or 'block4' in layer.name:
-            layer.trainable = True
-        else:
-            layer.trainable = False
+        if layer.name == "block3_conv1": # Descongelamos los 3 primeros bloques ya que se ha modificado el input
+            entrenable = False
+        if layer.name == "block5_conv1": # Descongelamos la última capa ya que nuestro dataset no se parece a ImageNet
+            entrenable = True
+        layer.trainable = entrenable
     
     for layer in base_model.layers[2:]:
         x = layer(x)
     
     # Creamos un top model o clasificador
-    x = Flatten()(x)
-    x = Dense(1000, activation='relu', name='fc1')(x)
-    x= Dropout(0.4)(x)
-    x = Dense(200, activation='relu', name='fc2')(x)
+    x = GlobalMaxPooling2D()(x)
+    x = Dense(1024, activation='relu', name='fc1')(x)
+    x = Dropout(0.4)(x)
+    x = Dense(256, activation='relu', name='fc2')(x)
     x = Dense(1, activation='sigmoid', name='predictions')(x)
     
     model = Model(inputs=input_tensor, outputs=x)
@@ -158,18 +159,20 @@ def mobilenet_model(input_shape):
         x = layer(x)
     
     # Creamos un top model o clasificador
-    x = Flatten()(x)
-    x = Dense(1000, activation='relu', name='fc1')(x)
-    x= Dropout(0.4)(x)
-    x = Dense(200, activation='relu', name='fc2')(x)
+    x = GlobalMaxPooling2D()(x)
+    x = Dense(1024, activation='relu', name='fc1')(x)
+    x = Dropout(0.4)(x)
+    x = Dense(256, activation='relu', name='fc2')(x)
     x = Dense(1, activation='sigmoid', name='predictions')(x)
     
-    # Congelamos todas las capas del modelo base (la capa de input no se congela)
+    # # Congelamos todas las capas del modelo a partir del bloque 6
+    entrenable = True
     for layer in base_model.layers:
-        if ('conv_dw' not in layer.name and 'conv_pw' not in layer.name) or '_1' in layer.name or '_2' in layer.name or '_3' in layer.name or '_4' in layer.name:
-            layer.trainable = True
-        else:
-            layer.trainable = False
+        if layer.name == "conv_pad_4": # Descongelamos los 3 primeros bloques ya que se ha modificado el input
+            entrenable = False
+        if layer.name == "conv_dw_11": # Descongelamos las últimas capas ya que nuestro dataset no se parece a ImageNet
+            entrenable = True
+        layer.trainable = entrenable
     
     model = Model(inputs=input_tensor, outputs=x)
     

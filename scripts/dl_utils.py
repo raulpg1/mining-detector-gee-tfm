@@ -117,8 +117,9 @@ def all_models_metrics(models, model_names):
     plt.tight_layout()  # Ajusta el layout para que no haya solapamiento
     plt.show()
 
-def evaluate_model(test_model,val_images,val_labels,thres,model_name):    
+def evaluate_model(test_model,val_images,val_labels,thres,model_name,visualizar=True):    
     test_preds = test_model.predict(val_images,verbose=0)
+    
     if thres:
         thresh = []
         score = []
@@ -136,15 +137,14 @@ def evaluate_model(test_model,val_images,val_labels,thres,model_name):
         plt.show()
         optimal_threshold = thresh[np.argmax(score)]
 
-    # print(f"Evaluación del modelo -> {model_name}")
-    test_preds = np.squeeze(test_preds)
-    print(classification_report(val_labels, test_preds > 0.5))
+    if visualizar:
+        print(classification_report(val_labels, test_preds > 0.5, digits=3))
 
 def evaluate_all_models(models,model_names,val_images,val_labels):
     for i in range(len(models)):
         print(f"Métricas del modelo -> {model_names[i]}")
         test_preds = np.squeeze(models[i].predict(val_images))
-        print(classification_report(val_labels, test_preds > 0.5))
+        print(classification_report(val_labels, test_preds > 0.5, digits=3))
         print("\n")
 
 def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
@@ -178,23 +178,10 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
         #Comparamos el Macro avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
             return df, True
-        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
-            sum_0 = sum(valores[0])
-            sum_1 = sum(valores[1])
-            sum_old_0 = sum(valores_old[0])
-            sum_old_1 = sum(valores_old[1])
-            if   (sum_0 > sum_old_0 and sum_1 > sum_old_1) or (sum_0 >= sum_old_0 and sum_1 > sum_old_1) or (sum_0 > sum_old_0 and sum_1 >= sum_old_1) : # si el actual es mejor nos quedamos con el actual
+        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1 score del modelo nuevo vs el viejo sea mínima
+            if abs(valores[0][-1]-valores[1][-1]) < abs(valores_old[1][-1]-valores_old[1][-1]):
                 return df, True
-            elif (sum_old_0 > sum_0 and sum_old_1 > sum_1) or (sum_old_0 >= sum_0 and sum_old_1 > sum_1) or (sum_old_0 > sum_0 and sum_old_1 >= sum_1): # si el anterior es mejor nos quedamos con el anterior
-                return prev_df, False
-            elif sum_0 == sum_old_0 and sum_1 == sum_old_1: # si son iguales nos quedamos con el que tenga menor diferencia entre las clases
-                if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
-                    return df, True
-                else:
-                    return prev_df, False
-            elif sum_0 + sum_1 > sum_old_0 + sum_old_1:
-                return df, True
-            else:   
+            else:
                 return prev_df, False
         else:
             return prev_df, False
@@ -246,23 +233,10 @@ def compare_best_results(df,prev_df,path,prev_path):
         #Comparamos el Macro avg ya que tiene en cuenta el número de elementos pertenecientes a cada clase
         if valores[-1] > valores_old[-1]:
             return df, path
-        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1-score de ambas clases sea mínimo
-            sum_0 = sum(valores[0])
-            sum_1 = sum(valores[1])
-            sum_old_0 = sum(valores_old[0])
-            sum_old_1 = sum(valores_old[1])
-            if   (sum_0 > sum_old_0 and sum_1 > sum_old_1) or (sum_0 >= sum_old_0 and sum_1 > sum_old_1) or (sum_0 > sum_old_0 and sum_1 >= sum_old_1) : # si el actual es mejor nos quedamos con el actual
+        elif valores[-1] == valores_old[-1]: # si es igual comparamos que la diferencia entre el f1 score del modelo nuevo vs el viejo sea mínima
+            if abs(valores[0][-1]-valores[1][-1]) < abs(valores_old[1][-1]-valores_old[1][-1]):
                 return df, path
-            elif (sum_old_0 > sum_0 and sum_old_1 > sum_1) or (sum_old_0 >= sum_0 and sum_old_1 > sum_1) or (sum_old_0 > sum_0 and sum_old_1 >= sum_1): # si el anterior es mejor nos quedamos con el anterior
-                return prev_df, prev_path
-            elif sum_0 == sum_old_0 and sum_1 == sum_old_1: # si son iguales nos quedamos con el que tenga menor diferencia entre las clases
-                if abs(valores[0][0]-valores[0][1]) < abs(valores_old[0][0]-valores_old[0][1]) and abs(valores[1][0]-valores[1][1]) < abs(valores_old[1][0]-valores_old[1][1]):
-                    return df, path
-                else:
-                    return prev_df, prev_path
-            elif sum_0 + sum_1 > sum_old_0 + sum_old_1:
-                return df, path
-            else:   
+            else:
                 return prev_df, prev_path
         else:
             return prev_df, prev_path

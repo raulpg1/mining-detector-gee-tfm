@@ -54,14 +54,14 @@ def define_callbacks(model_name,hiperparams):
         mode='min')
     list_callbacks.append(early_stopping)
 
-    model_checkpoint = ModelCheckpoint(
-        filepath=os.path.join(os.getcwd(),"weigths",model_name+"weights.h5"),
-        monitor='val_loss',
-        verbose=1,
-        save_best_only=True,
-        save_weights_only=True,
-        mode='auto')
-    list_callbacks.append(model_checkpoint)
+    # model_checkpoint = ModelCheckpoint(
+    #     filepath=os.path.join(os.getcwd(),"weights",model_name+"weights.h5"),
+    #     monitor='val_loss',
+    #     verbose=1,
+    #     save_best_only=False,
+    #     save_weights_only=False,
+    #     mode='auto')
+    # list_callbacks.append(model_checkpoint)
     return list_callbacks
 
 # - Graficar la evolución de la precisión y la pérdida del modelo
@@ -187,10 +187,10 @@ def get_df_best_model(model,x_test,y_test,model_name,prev_df,fecha_hora_actual):
             return prev_df, False
             
 def limpia_directorios(directorio):
-    if directorio == "weigths":
-        for elem in os.listdir("./weigths/"):
+    if directorio == "weights":
+        for elem in os.listdir("./weights/"):
             if ".h5" in elem:
-                os.remove("./weigths/"+elem)
+                os.remove("./weights/"+elem)
     elif directorio == "aux_path":
         for elem in os.listdir("./aux_path/"):
             os.remove("./aux_path/"+elem)
@@ -199,7 +199,7 @@ def limpia_directorios(directorio):
             os.remove("./best_models/"+elem)
         
 def save_models(model,results,hiperparams,fecha_actual,model_name,path_prueba_actual):
-    model.save_weights(path_prueba_actual+f'best_{model_name}.h5')
+    model.save_weights(path_prueba_actual+f'best_{model_name}.weights.h5')
     with open(path_prueba_actual+f'best_hiperparams_{model_name}_{fecha_actual}.txt', 'w') as archivo:
         archivo.write(str(hiperparams))
     with open(path_prueba_actual+f'best_results_{model_name}_{fecha_actual}.pkl', 'wb') as file:
@@ -210,13 +210,11 @@ def obtener_tablas_resultado(path_prueba_actual,names_csv_best_params):
     for elem in names_csv_best_params:
         shutil.copy("../notebooks/aux_path/"+elem,path_prueba_actual)
 
-def load_hiperparams_and_results(directorio,model):
-    file = [elem for elem in os.listdir(directorio) if model in elem and ".txt" in elem][0]
-    with open(f"{directorio}/{file}", 'r') as archivo:
+def load_hiperparams_and_results(hiperparams,pkl):
+    with open(hiperparams, 'r') as archivo:
         contenido = archivo.read()
         hiperparams = ast.literal_eval(contenido)
-    file = [elem for elem in os.listdir(directorio) if model in elem and ".pkl" in elem][0]
-    with open(f"{directorio}/{file}", 'rb') as archivo:
+    with open(pkl, 'rb') as archivo:
         modelo = pickle.load(archivo)  
     return hiperparams,modelo
 
@@ -243,14 +241,24 @@ def compare_best_results(df,prev_df,path,prev_path):
     return df, path
 
 def get_total_params(model):
-    stream = io.StringIO()
-    with redirect_stdout(stream):
-        model.summary()
-    summary_str = stream.getvalue()
-    print(re.search(r"(Total params.*\n.*\n.+\))",summary_str).group(0))
+    total_params = model.count_params()
+    trainable_params = np.sum([np.prod(v.shape) for v in model.trainable_weights])
+    non_trainable_params = np.sum([np.prod(v.shape) for v in model.non_trainable_weights])
 
-def get_best_model_path(path,model,file):
-    return f"{path}/{[p for p in os.listdir(path) if file in p and model in p][0]}"
+    bytes_per_param = 4  # Para float32
+    
+    total_size_mb = round((total_params * bytes_per_param) / (1024 ** 2),2)
+    trainable_size_mb = round((trainable_params * bytes_per_param) / (1024 ** 2),2)
+    non_trainable_size_mb = round((non_trainable_params * bytes_per_param) / (1024 ** 2),2)
+
+    print(f"Total params: {total_params} ({total_size_mb:.2f} MB)")
+    print(f"Trainable params: {trainable_params} ({trainable_size_mb:.2f} MB)")
+    print(f"Non-trainable params: {non_trainable_params} ({non_trainable_size_mb:.2f} MB)")
+
+    params = [total_params,trainable_params,non_trainable_params,total_size_mb,trainable_size_mb,non_trainable_size_mb]
+    
+    return params
+
 
 def visualize_inference(model,x,x_norm,y,correct_class):
     test_pred = model.predict(x_norm,verbose=0)    
@@ -267,7 +275,36 @@ def visualize_inference(model,x,x_norm,y,correct_class):
     viz_tools.plot_image_grid(x[clasificadas], labels=["* Real class: "+str(int(real))+"\n* Pred class: "+str(int(pred)) for real,pred in zip(y_clasificadas,pred_ko)],norm=True)
     
     
-
+def get_best_results_paths(model):
+    path_best_models = f"../notebooks/resultados"
+    paths_best_models = [path_best_models+"/"+path for path in os.listdir(path_best_models)]
+    best_results = []
+    for path in paths_best_models:
+        df_aux = pd.DataFrame()
+        path_aux = ""
+        for csv in os.listdir(path):
+            if "csv" in csv:
+                df_aux, path_aux = compare_best_results(pd.read_csv(path+"/"+csv),df_aux,path+"/"+csv,path_aux)
+        best_results.append(path_aux)
+    for elem in best_results:
+        if model in elem:
+            best_path = "/".join(elem.split("/")[:-1])
+            mejor_split = re.sub(r"\_\d{4}\-\d{2}\-\d{2}\_\d{2}\-\d{2}\.csv","",elem.split("/")[-1].replace("resultados_evaluacion_",""))
+    for path in os.listdir(best_path):
+        if ".pkl" in path and mejor_split in path:
+            pkl = best_path+"/"+path
+        if ".csv" in path and mejor_split in path:
+            csv = best_path+"/"+path
+        if ".h5" in path and mejor_split in path:
+            weights = best_path+"/"+path
+        if ".txt" in path and mejor_split in path:
+            hiperparams = best_path+"/"+path
+    dic = {"metricas":pkl,
+          "weights":weights,
+          "hiperparams":hiperparams,
+          "resultados":csv,
+          "dir" : best_path+"/"+mejor_split} 
+    return dic
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------------------------

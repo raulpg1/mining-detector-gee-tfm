@@ -15,7 +15,7 @@ from tensorflow.keras import layers
 
 import tensorflow as tf
 
-from keras.layers import Input, Dense, Flatten, Dropout, Conv2D, GlobalMaxPooling2D
+from keras.layers import Input, Dense, Flatten, Dropout, Conv2D, GlobalMaxPooling2D, GlobalAveragePooling2D
 
 from tensorflow.keras.applications import VGG16
 from tensorflow.keras.applications import MobileNet
@@ -105,7 +105,7 @@ def scratch_modified_model(input_shape):
 
     return model
     
-def vgg_16_model(input_shape):
+def vgg_16_model(input_shape,top_model_layer):
     # Importamos el modelo VGG16 preentrenado en ImageNet sin el top model
     base_model = VGG16(weights='imagenet',include_top=False)
     
@@ -124,9 +124,16 @@ def vgg_16_model(input_shape):
     
     for layer in base_model.layers[2:]:
         x = layer(x)
+
     
     # Creamos un top model o clasificador
-    x = GlobalMaxPooling2D()(x)
+    if top_model_layer == "Flatten":
+        x = Flatten()(x)
+    elif top_model_layer == "GlobalMaxPooling":
+        x = GlobalMaxPooling2D()(x)
+    elif top_model_layer == "GlobalAveragePooling":
+        x = GlobalAveragePooling2D()(x)
+
     x = Dense(1024, activation='relu', name='fc1')(x)
     x = Dropout(0.4)(x)
     x = Dense(256, activation='relu', name='fc2')(x)
@@ -149,7 +156,7 @@ def vgg_16_model(input_shape):
     )
     return model
 
-def mobilenet_model(input_shape):
+def mobilenet_model(input_shape,top_model_layer):
     base_model = MobileNet(weights='imagenet',include_top=False)
     
     input_tensor = Input(shape=input_shape)
@@ -159,7 +166,14 @@ def mobilenet_model(input_shape):
         x = layer(x)
     
     # Creamos un top model o clasificador
-    x = GlobalMaxPooling2D()(x)
+    # Seleccionamos una de las siguientes capas
+    if top_model_layer == "Flatten":
+        x = Flatten()(x)
+    elif top_model_layer == "GlobalMaxPooling":
+        x = GlobalMaxPooling2D()(x)
+    elif top_model_layer == "GlobalAveragePooling":
+        x = GlobalAveragePooling2D()(x)
+        
     x = Dense(1024, activation='relu', name='fc1')(x)
     x = Dropout(0.4)(x)
     x = Dense(256, activation='relu', name='fc2')(x)

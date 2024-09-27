@@ -1,1 +1,0 @@
-[{'class_weight': {0: 0.8568438677270824, 1: 1.2005865102639297}, 'batch_size': 32, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping', 'model_checkpoint'], 'patience_early_stopping': 7, 'patience_reduce_lr': 4, 'test_size': 0.2, 'semilla': 1495}, 1, 'resultados_evaluacion_vgg16_split_20_2024-09-25_07-43.csv', 132.72103023529053, 34]

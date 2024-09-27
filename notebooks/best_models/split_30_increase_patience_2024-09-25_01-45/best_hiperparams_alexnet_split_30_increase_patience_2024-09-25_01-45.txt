@@ -1,1 +1,0 @@
-[{'class_weight': {0: 1, 1: 1}, 'batch_size': 16, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping', 'model_checkpoint'], 'patience_early_stopping': 14, 'patience_reduce_lr': 8, 'test_size': 0.3, 'semilla': 894}, 3, 'resultados_evaluacion_alexnet_split_30_increase_patience_2024-09-25_03-27.csv', 427.39395117759705, 118]

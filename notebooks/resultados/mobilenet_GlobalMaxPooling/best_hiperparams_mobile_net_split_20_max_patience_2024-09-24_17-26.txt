@@ -1,0 +1,1 @@
+[{'class_weight': {0: 0.8568438677270824, 1: 1.2005865102639297}, 'batch_size': 32, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping', 'model_checkpoint'], 'patience_early_stopping': 20, 'patience_reduce_lr': 10, 'test_size': 0.2, 'semilla': 1538}, 1, 'resultados_evaluacion_mobile_net_split_20_max_patience_2024-09-24_18-13.csv', 361.4978458881378, 99]

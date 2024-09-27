@@ -1,0 +1,1 @@
+[{'class_weight': {0: 0.8568438677270824, 1: 1.2005865102639297}, 'batch_size': 32, 'epochs': 160, 'define_callbacks': ['early_stopping'], 'patience_early_stopping': 14, 'test_size': 0.2, 'semilla': 1120}, 2, 'resultados_evaluacion_mobile_net_split_20_increase_patience_2024-09-27_01-30.csv', 138.22478938102722, 37]

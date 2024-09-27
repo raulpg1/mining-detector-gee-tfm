@@ -1,0 +1,1 @@
+[{'class_weight': {0: 1, 1: 1}, 'batch_size': 32, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping'], 'patience_early_stopping': 14, 'patience_reduce_lr': 8, 'test_size': 0.2, 'semilla': 271}, 3, 'resultados_evaluacion_vgg16_split_20_increase_patience_2024-09-26_19-14.csv', 220.11925101280212, 60]

@@ -1,1 +1,0 @@
-[{'class_weight': {0: 1, 1: 1}, 'batch_size': 16, 'epochs': 160, 'define_callbacks': ['reduce_lr', 'early_stopping', 'model_checkpoint'], 'patience_early_stopping': 7, 'patience_reduce_lr': 4, 'test_size': 0.3, 'semilla': 847}, 3, 'resultados_evaluacion_alexnet_split_30_2024-09-25_10-04.csv', 273.64888525009155, 74]

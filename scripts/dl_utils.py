@@ -277,7 +277,7 @@ def visualize_inference(model,x,x_norm,y,correct_class):
     
 def get_best_results_paths(model):
     path_best_models = f"../notebooks/resultados"
-    paths_best_models = [path_best_models+"/"+path for path in os.listdir(path_best_models)]
+    paths_best_models = [path_best_models+"/"+path for path in os.listdir(path_best_models) if "checkpoint_resultados" not in path]
     best_results = []
     for path in paths_best_models:
         df_aux = pd.DataFrame()

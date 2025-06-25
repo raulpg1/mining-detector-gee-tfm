@@ -1,4 +1,4 @@
-# mining-detector-gee-tfm
+# TFM: Creación y evaluación de modelos de clasificación para imágenes satelitales de minas ilegales en el Amazonas.
 Pasos para la instalación de Tensorflow GPU en Windows 11 a través de WSL2
 
 1. Actualizamos los drives de la GPU (NVIDIA)
